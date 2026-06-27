@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Panel · KAIZEN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#F6F8F7; --card:#FFFFFF; --ink:#1A241E; --inkSoft:#69736C; --line:#E6EAE7;
+    --green:#18794B; --greenSoft:#E7F3EC; --okText:#157A48;
+    --noText:#C0483B; --noFill:#FBEDEA; --noBorder:#F0CFC8;
+  }
+  *{box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif;}
+  body{margin:0; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:640px; margin:0 auto; padding:28px 18px 70px;}
+  header.top{display:flex; align-items:center; justify-content:space-between; margin-bottom:30px;}
+  .lockup{display:flex; align-items:center; gap:11px;}
+  .logo{width:36px; height:36px; border-radius:10px; background:var(--green); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:19px;}
+  .brand{font-weight:800; font-size:18px; letter-spacing:2px; line-height:1;}
+  .brand-sub{font-size:10.5px; color:var(--inkSoft); letter-spacing:1px; margin-top:3px; font-weight:600;}
+  .linkout{font-size:13px; color:var(--inkSoft); text-decoration:none; font-weight:600;}
+  h1{font-size:25px; font-weight:800; letter-spacing:-0.3px; margin:0 0 6px;}
+  .sub{color:var(--inkSoft); font-size:14px; margin:0 0 24px; line-height:1.5;}
+  label{display:block; font-size:13px; font-weight:700; color:var(--inkSoft); margin:0 0 6px; letter-spacing:.2px;}
+  input, select, textarea{width:100%; padding:13px 14px; border-radius:12px; border:1.5px solid var(--line); background:var(--card); font-size:15px; color:var(--ink); margin-bottom:16px;}
+  input:focus, select:focus, textarea:focus{outline:none; border-color:var(--green);}
+  textarea{resize:vertical; min-height:64px;}
+  .primary{width:100%; padding:15px; border-radius:13px; border:none; background:var(--green); color:#fff; font-size:16px; font-weight:700; cursor:pointer;}
+  .primary:disabled{background:var(--line); cursor:default;}
+  .card{background:var(--card); border:1.5px solid var(--line); border-radius:16px; padding:20px; margin-bottom:18px;}
+  .row{display:flex; gap:10px;}
+  .row > *{flex:1;}
+  .seg{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+  .segbtn{flex:1; min-width:60px; padding:11px; border-radius:11px; border:1.5px solid var(--line); background:var(--card); color:var(--ink); font-weight:700; cursor:pointer;}
+  .segbtn.on{background:var(--green); border-color:var(--green); color:#fff;}
+  .tabbar{display:flex; gap:8px; margin-bottom:22px;}
+  .tab{flex:1; padding:12px; border-radius:12px; border:1.5px solid var(--line); background:var(--card); color:var(--inkSoft); font-weight:700; cursor:pointer;}
+  .tab.on{background:var(--ink); border-color:var(--ink); color:#fff;}
+  .item{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:15px 16px; border:1.5px solid var(--line); border-radius:13px; background:var(--card); margin-bottom:10px;}
+  .item .meta{font-size:12px; color:var(--inkSoft); margin-top:4px;}
+  .item .corr{color:var(--okText); font-weight:700;}
+  .del{flex-shrink:0; border:1.5px solid var(--noBorder); background:var(--noFill); color:var(--noText); border-radius:10px; padding:8px 12px; font-size:13px; font-weight:700; cursor:pointer;}
+  .muted{color:var(--inkSoft); font-size:13px;}
+  .empty{padding:30px 18px; text-align:center; color:var(--inkSoft); border:1.5px dashed var(--line); border-radius:14px;}
+  .note{font-size:13px; padding:12px 14px; border-radius:11px; margin-bottom:16px;}
+  .note.ok{background:var(--greenSoft); color:var(--okText);}
+  .note.err{background:var(--noFill); color:var(--noText);}
+  .logout{background:none; border:none; color:var(--inkSoft); font-size:13px; font-weight:600; cursor:pointer;}
+  .hint{font-size:12px; color:var(--inkSoft); margin:-8px 0 16px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div class="lockup">
+        <span class="logo">K</span>
+        <div><div class="brand">KAIZEN</div><div class="brand-sub">PANEL DE ADMINISTRACIÓN</div></div>
+      </div>
+      <a class="linkout" href="index.html">Ver la web →</a>
+    </header>
+    <div id="app"></div>
+  </div>
+
+<script>
+const SUPABASE_URL = "https://bsijdcsruldswsubaieu.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzaWpkY3NydWxkc3dzdWJhaWV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTgzMTQsImV4cCI6MjA5ODAzNDMxNH0.dcEx8m8JHTxhLxqqnBJoIibjPMxchORRkJqc4I5UjOg";
+const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const LETRAS = ["A","B","C"];
+const esc = (t)=>String(t==null?"":t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const app = ()=>document.getElementById("app");
+
+let TEMAS=[], PREGUNTAS=[], tab="preguntas", correctaSel=0, temaSel=null, aviso=null;
+
+async function cargar(){
+  const [t,p] = await Promise.all([
+    supa.from("temas").select("*").order("id"),
+    supa.from("preguntas").select("*").order("id",{ascending:false})
+  ]);
+  TEMAS = t.data||[]; PREGUNTAS = p.data||[];
+  if(temaSel===null && TEMAS.length) temaSel=TEMAS[0].id;
+}
+
+function nombreTema(id){ const t=TEMAS.find(x=>x.id===id); return t?t.nombre:"—"; }
+
+// ---------- LOGIN ----------
+function vistaLogin(msg){
+  app().innerHTML=`
+    <h1>Acceso al panel</h1>
+    <p class="sub">Entra con tu correo y contraseña de administrador para gestionar el temario.</p>
+    ${msg?`<div class="note err">${esc(msg)}</div>`:""}
+    <div class="card">
+      <label>Correo</label>
+      <input id="email" type="email" autocomplete="username" placeholder="tucorreo@ejemplo.com" />
+      <label>Contraseña</label>
+      <input id="pass" type="password" autocomplete="current-password" placeholder="••••••••" />
+      <button class="primary" id="entrar">Entrar</button>
+    </div>`;
+  const entrar=async()=>{
+    const email=document.getElementById("email").value.trim();
+    const password=document.getElementById("pass").value;
+    if(!email||!password){ vistaLogin("Escribe tu correo y contraseña."); return; }
+    const btn=document.getElementById("entrar"); btn.disabled=true; btn.textContent="Entrando…";
+    const { error } = await supa.auth.signInWithPassword({ email, password });
+    if(error){ vistaLogin("No se pudo entrar. Revisa el correo y la contraseña."); }
+    else { await iniciar(); }
+  };
+  document.getElementById("entrar").onclick=entrar;
+  document.getElementById("pass").addEventListener("keydown",e=>{ if(e.key==="Enter") entrar(); });
+}
+
+// ---------- PANEL ----------
+function vistaPanel(){
+  const A=app();
+  A.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h1 style="margin:0">Gestión del temario</h1>
+      <button class="logout" id="salir">Cerrar sesión</button>
+    </div>
+    <p class="sub">Añade temas y preguntas. Se guardan al instante y aparecen en la web.</p>
+    ${aviso?`<div class="note ${aviso.tipo}">${esc(aviso.txt)}</div>`:""}
+    <div class="tabbar">
+      <button class="tab ${tab==='preguntas'?'on':''}" data-tab="preguntas">Preguntas (${PREGUNTAS.length})</button>
+      <button class="tab ${tab==='temas'?'on':''}" data-tab="temas">Temas (${TEMAS.length})</button>
+    </div>
+    <div id="panelBody"></div>`;
+  A.querySelector("#salir").onclick=async()=>{ await supa.auth.signOut(); vistaLogin(); };
+  A.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ tab=b.dataset.tab; aviso=null; vistaPanel(); });
+  tab==="temas"?cuerpoTemas():cuerpoPreguntas();
+}
+
+function cuerpoTemas(){
+  const B=document.getElementById("panelBody");
+  B.innerHTML=`
+    <div class="card">
+      <label>Nuevo tema</label>
+      <input id="nuevoTema" placeholder="Ej.: Ley de Seguridad Vial" />
+      <button class="primary" id="addTema">Añadir tema</button>
+    </div>
+    ${TEMAS.length?TEMAS.map(t=>`
+      <div class="item">
+        <div><strong>${esc(t.nombre)}</strong>
+          <div class="meta">${PREGUNTAS.filter(p=>p.tema_id===t.id).length} preguntas</div></div>
+        <button class="del" data-deltema="${t.id}">Borrar</button>
+      </div>`).join(""):`<div class="empty">Aún no hay temas.</div>`}`;
+  B.querySelector("#addTema").onclick=async()=>{
+    const nombre=document.getElementById("nuevoTema").value.trim();
+    if(!nombre){ return; }
+    const { error } = await supa.from("temas").insert({ nombre });
+    if(error){ aviso={tipo:"err",txt:"No se pudo guardar el tema."}; }
+    else { aviso={tipo:"ok",txt:"Tema añadido."}; }
+    await cargar(); vistaPanel();
+  };
+  B.querySelectorAll("[data-deltema]").forEach(b=>b.onclick=async()=>{
+    if(!confirm("¿Borrar este tema y todas sus preguntas?")) return;
+    const { error } = await supa.from("temas").delete().eq("id",Number(b.dataset.deltema));
+    aviso = error?{tipo:"err",txt:"No se pudo borrar."}:{tipo:"ok",txt:"Tema borrado."};
+    await cargar(); vistaPanel();
+  });
+}
+
+function cuerpoPreguntas(){
+  const B=document.getElementById("panelBody");
+  if(!TEMAS.length){
+    B.innerHTML=`<div class="empty">Primero crea un tema en la pestaña "Temas".</div>`; return;
+  }
+  if(temaSel===null) temaSel=TEMAS[0].id;
+  B.innerHTML=`
+    <div class="card">
+      <label>Tema</label>
+      <select id="temaSel">${TEMAS.map(t=>`<option value="${t.id}" ${t.id===temaSel?"selected":""}>${esc(t.nombre)}</option>`).join("")}</select>
+      <label>Enunciado de la pregunta</label>
+      <textarea id="enun" placeholder="Escribe aquí la pregunta…"></textarea>
+      <div class="row"><div><label>Opción A</label><input id="oa"/></div><div><label>Opción B</label><input id="ob"/></div></div>
+      <div><label>Opción C</label><input id="oc"/></div>
+      <label>Respuesta correcta</label>
+      <div class="seg" id="segCorr">${LETRAS.map((l,i)=>`<button class="segbtn ${i===correctaSel?'on':''}" data-corr="${i}">${l}</button>`).join("")}</div>
+      <label>Explicación (una frase, opcional)</label>
+      <textarea id="exp" placeholder="Por qué es correcta…"></textarea>
+      <button class="primary" id="addPreg">Guardar pregunta</button>
+    </div>
+    <div class="muted" style="margin:4px 2px 12px">Últimas preguntas guardadas</div>
+    ${PREGUNTAS.length?PREGUNTAS.slice(0,40).map(p=>`
+      <div class="item">
+        <div><strong>${esc(p.enunciado)}</strong>
+          <div class="meta">${esc(nombreTema(p.tema_id))} · correcta: <span class="corr">${LETRAS[p.correcta]}</span></div></div>
+        <button class="del" data-delpreg="${p.id}">Borrar</button>
+      </div>`).join(""):`<div class="empty">Aún no hay preguntas.</div>`}`;
+
+  document.getElementById("temaSel").onchange=e=>{ temaSel=Number(e.target.value); };
+  B.querySelectorAll("[data-corr]").forEach(b=>b.onclick=()=>{ correctaSel=Number(b.dataset.corr); cuerpoPreguntas(); });
+
+  document.getElementById("addPreg").onclick=async()=>{
+    const fila={
+      tema_id: Number(document.getElementById("temaSel").value),
+      enunciado: document.getElementById("enun").value.trim(),
+      opcion_a: document.getElementById("oa").value.trim(),
+      opcion_b: document.getElementById("ob").value.trim(),
+      opcion_c: document.getElementById("oc").value.trim(),
+      correcta: correctaSel,
+      explicacion: document.getElementById("exp").value.trim() || null
+    };
+    if(!fila.enunciado||!fila.opcion_a||!fila.opcion_b||!fila.opcion_c){
+      aviso={tipo:"err",txt:"Completa el enunciado y las tres opciones."}; vistaPanel(); return;
+    }
+    const { error } = await supa.from("preguntas").insert(fila);
+    if(error){ aviso={tipo:"err",txt:"No se pudo guardar la pregunta."}; }
+    else { aviso={tipo:"ok",txt:"Pregunta guardada. Ya aparece en la web."}; correctaSel=0; }
+    await cargar(); vistaPanel();
+  };
+  B.querySelectorAll("[data-delpreg]").forEach(b=>b.onclick=async()=>{
+    if(!confirm("¿Borrar esta pregunta?")) return;
+    const { error } = await supa.from("preguntas").delete().eq("id",Number(b.dataset.delpreg));
+    aviso = error?{tipo:"err",txt:"No se pudo borrar."}:{tipo:"ok",txt:"Pregunta borrada."};
+    await cargar(); vistaPanel();
+  });
+}
+
+// ---------- ARRANQUE ----------
+async function iniciar(){
+  app().innerHTML=`<div class="empty">Cargando…</div>`;
+  await cargar(); aviso=null; vistaPanel();
+}
+async function main(){
+  const { data } = await supa.auth.getSession();
+  if(data.session){ await iniciar(); } else { vistaLogin(); }
+}
+main();
+</script>
+</body>
+</html>
