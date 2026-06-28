@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KAIZEN · Preparación Policía Municipal de Madrid</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#FFFFFF; --bg2:#F6F8FC; --ink:#0A1020; --ink2:#3B4459; --muted:#7A8499; --line:#E7EBF3;
+    --blue:#2B5797; --blueInk:#213F69; --blueSoft:#EAF0F8;
+    --ok:#16A34A; --okText:#0E8A40; --okFill:#EAF7EF; --okBorder:#BEE6CC;
+    --noText:#C81E45; --noFill:#FDEDF0; --noBorder:#F5C9D3;
+    --disp:'Sora',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif;
+    --sh:0 1px 2px rgba(10,16,32,.04), 0 8px 24px rgba(10,16,32,.06);
+    --shH:0 8px 18px rgba(35,72,255,.10), 0 22px 48px rgba(35,72,255,.14);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--body); -webkit-font-smoothing:antialiased; line-height:1.5;}
+  .container{max-width:1080px; margin:0 auto; padding:0 22px;}
+  .narrow{max-width:600px; margin:0 auto; padding:34px 22px 80px;}
+
+  .nav{position:sticky; top:0; z-index:40; background:rgba(255,255,255,.82); backdrop-filter:saturate(180%) blur(14px); border-bottom:1px solid var(--line);}
+  .nav-in{max-width:1080px; margin:0 auto; padding:12px 22px; display:flex; align-items:center; justify-content:space-between;}
+  .lock{display:flex; align-items:center; gap:11px; cursor:pointer;}
+  .word{font-family:var(--disp); font-weight:800; font-size:19px; letter-spacing:1.5px; line-height:1;}
+  .word-sub{font-family:var(--body); font-weight:600; font-size:9.5px; letter-spacing:1.3px; color:var(--muted); text-transform:uppercase; margin-top:3px;}
+  .navcta{font-family:var(--body); font-weight:600; font-size:14px; padding:9px 18px; border-radius:10px; border:none; background:var(--ink); color:#fff; cursor:pointer; transition:transform .12s, background .2s;}
+  .navcta:hover{background:#1a2236;} .navcta:active{transform:scale(.97);}
+  .navmenu{display:flex; align-items:center; gap:4px;}
+  .navlink{font-family:var(--body); font-weight:600; font-size:14px; padding:8px 13px; border-radius:9px; border:none; background:none; color:var(--ink2); cursor:pointer; transition:background .15s, color .15s;}
+  .navlink:hover{background:var(--bg2); color:var(--ink);}
+  .navlink.on{color:var(--blue);}
+  @media (max-width:560px){
+    .word{font-size:17px;} .navmenu{gap:1px;} .navlink{padding:7px 8px; font-size:12.5px;} .navcta{padding:8px 12px; font-size:12.5px;}
+    .nav-in{padding:10px 14px;}
+  }
+
+  .hero{padding:clamp(48px,8vw,100px) 0 clamp(40px,6vw,72px);}
+  .hero-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:center;}
+  .eyebrow{font-family:var(--body); font-weight:700; font-size:12px; letter-spacing:1.8px; text-transform:uppercase; color:var(--blue); margin:0 0 18px;}
+  h1.hero-h{font-family:var(--disp); font-weight:800; font-size:clamp(32px,5vw,52px); line-height:1.06; letter-spacing:-1.3px; margin:0 0 20px;}
+  .hero-sub{font-size:clamp(16px,2.2vw,18px); color:var(--ink2); margin:0 0 32px; max-width:32em;}
+  .cta-row{display:flex; gap:12px; flex-wrap:wrap;}
+  .btn-p{font-family:var(--body); font-weight:600; font-size:16px; padding:15px 26px; border-radius:13px; border:none; background:var(--blue); color:#fff; cursor:pointer; box-shadow:0 8px 22px rgba(35,72,255,.26); transition:transform .12s, box-shadow .2s, background .2s;}
+  .btn-p:hover{background:var(--blueInk);} .btn-p:active{transform:translateY(1px) scale(.99);}
+  .btn-g{font-family:var(--body); font-weight:600; font-size:16px; padding:15px 24px; border-radius:13px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer; transition:all .15s;}
+  .btn-g:hover{border-color:#C9D3EC;}
+
+  .preview{background:var(--bg); border:1px solid var(--line); border-radius:22px; box-shadow:0 30px 60px rgba(10,16,32,.12); padding:22px;}
+  .pv-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .pv-tag{font-family:var(--disp); font-weight:700; font-size:12px; letter-spacing:.6px; text-transform:uppercase; color:var(--blue);}
+  .pv-q{font-weight:700; font-size:17px; margin:0 0 16px; line-height:1.35;}
+  .pv-opt{display:flex; align-items:center; gap:11px; padding:13px 14px; border:1.5px solid var(--line); border-radius:12px; margin-bottom:9px; font-size:14.5px; font-weight:500;}
+  .pv-opt.ok{background:var(--okFill); border-color:var(--okBorder); color:var(--okText);}
+  .pv-opt.dim{opacity:.5;}
+  .pv-b{width:24px; height:24px; border-radius:7px; background:var(--bg2); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--muted); flex-shrink:0;}
+  .pv-opt.ok .pv-b{background:var(--ok); border-color:var(--ok); color:#fff;}
+
+  .sec{padding:clamp(54px,8vw,92px) 0;}
+  .sec.alt{background:var(--bg2); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .sec-head{max-width:660px; margin:0 0 42px;}
+  h2.sec-h{font-family:var(--disp); font-weight:700; font-size:clamp(25px,3.6vw,36px); letter-spacing:-.6px; line-height:1.12; margin:0 0 12px;}
+  .sec-p{font-size:16px; color:var(--ink2); margin:0;}
+
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  .stat{text-align:center;}
+  .stat .num{font-family:var(--disp); font-weight:800; font-size:clamp(34px,6vw,52px); letter-spacing:-1.5px; line-height:1; color:var(--ink);}
+  .stat .lab{font-size:14px; color:var(--muted); font-weight:500; margin-top:8px;}
+
+  .modos{display:flex; flex-direction:column; gap:18px; max-width:720px; margin:0 auto;}
+  .modo{display:flex; flex-direction:row; align-items:center; text-align:left; gap:22px; padding:26px 30px; border-radius:18px; border:1px solid var(--line); background:var(--bg); cursor:pointer; box-shadow:var(--sh); transition:transform .2s cubic-bezier(.2,.7,.2,1), box-shadow .2s, border-color .2s;}
+  .mtxt{flex:1; display:flex; flex-direction:column; gap:4px; min-width:0;}
+  .marrow{flex-shrink:0; color:var(--blue); font-size:22px; font-weight:700;}
+  .modo:hover{transform:translateY(-4px); box-shadow:var(--shH); border-color:transparent;}
+  .modo .mi{width:50px; height:50px; border-radius:14px; background:linear-gradient(135deg,var(--blueSoft),#F2F4FF); display:flex; align-items:center; justify-content:center;}
+  .modo .mi svg{stroke:var(--blue); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+  .modo .mt{font-family:var(--disp); font-weight:700; font-size:19px;}
+  .modo .md{font-size:14.5px; color:var(--ink2); margin-top:-3px;}
+  .modo .mgo{font-size:14px; font-weight:600; color:var(--blue); margin-top:auto;}
+
+  .feat{display:grid; grid-template-columns:repeat(3,1fr); gap:28px;}
+  .ft .fi{width:42px; height:42px; border-radius:12px; background:var(--blueSoft); display:flex; align-items:center; justify-content:center; margin-bottom:15px;}
+  .ft .fi svg{stroke:var(--blue); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;}
+  .ft h3{font-family:var(--disp); font-weight:700; font-size:17px; margin:0 0 7px;}
+  .ft p{font-size:14.5px; color:var(--ink2); margin:0; line-height:1.55;}
+
+  .pasos{display:grid; grid-template-columns:repeat(3,1fr); gap:28px;}
+  .paso .pn{font-family:var(--disp); font-weight:800; font-size:15px; color:var(--blue); background:var(--blueSoft); width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; margin-bottom:15px;}
+  .paso h3{font-family:var(--disp); font-weight:700; font-size:17px; margin:0 0 7px;}
+  .paso p{font-size:14.5px; color:var(--ink2); margin:0; line-height:1.55;}
+
+  .faq{display:flex; flex-direction:column; gap:14px; max-width:760px;}
+  .qa{border:1px solid var(--line); border-radius:14px; padding:20px 22px; background:var(--bg);}
+  .qa h4{font-family:var(--disp); font-weight:700; font-size:16px; margin:0 0 6px;}
+  .qa p{font-size:14.5px; color:var(--ink2); margin:0; line-height:1.55;}
+
+  .temas-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
+  .tema-row{display:flex; align-items:center; justify-content:space-between; padding:17px 18px; border:1px solid var(--line); border-radius:13px; background:var(--bg);}
+  .tema-row .tn{font-weight:600; font-size:15.5px;}
+  .tema-row .tc{font-size:13px; color:var(--muted);}
+
+  footer{background:var(--ink); color:#C7CEDC;}
+  .fchecker{height:8px; background:repeating-conic-gradient(rgba(255,255,255,.85) 0% 25%, var(--blue) 0% 50%) 0 0 / 8px 8px;}
+  .fin{max-width:1080px; margin:0 auto; padding:52px 22px;}
+  .fbrand{font-family:var(--disp); font-weight:800; font-size:20px; letter-spacing:1.5px; color:#fff; margin-bottom:14px;}
+  .fdisc{font-size:13px; line-height:1.6; max-width:48em; color:#97A0B4;}
+  .fcopy{font-size:12.5px; color:#6E778C; margin-top:24px; border-top:1px solid rgba(255,255,255,.08); padding-top:20px;}
+
+  .reveal{opacity:0; transform:translateY(20px); transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1);}
+  .reveal.in{opacity:1; transform:none;}
+
+  /* ===== APP ===== */
+  .back{background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; font-weight:600; padding:0; margin-bottom:22px; font-family:var(--body);}
+  .h2a{font-family:var(--disp); font-size:28px; font-weight:700; letter-spacing:-.4px; margin:0 0 6px;}
+  .sub{color:var(--ink2); font-size:14.5px; margin:0 0 26px;}
+  .stack{display:flex; flex-direction:column; gap:12px;}
+  .temaBtn{display:flex; align-items:center; gap:13px; width:100%; text-align:left; padding:16px; border-radius:14px; border:1.5px solid var(--line); background:var(--bg); cursor:pointer; transition:border-color .16s, background .16s; font-family:var(--body); box-shadow:var(--sh);}
+  .temaBtn.on{border-color:var(--blue); background:var(--blueSoft);}
+  .chk{width:23px; height:23px; border-radius:8px; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; flex-shrink:0;}
+  .temaBtn.on .chk{background:var(--blue); border-color:var(--blue);}
+  .temaBtn .name{font-size:16px; font-weight:600;}
+  .pill{padding:11px 22px; border-radius:99px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink); font-size:15px; font-weight:600; cursor:pointer; font-family:var(--body); transition:border-color .15s, background .15s;}
+  .pill.on{border-color:var(--blue); background:var(--blue); color:#fff;}
+  .primary{width:100%; padding:16px; border-radius:14px; border:none; background:var(--blue); color:#fff; font-size:16px; font-weight:600; cursor:pointer; font-family:var(--body); box-shadow:0 8px 20px rgba(35,72,255,.24); transition:background .2s;}
+  .primary:hover{background:var(--blueInk);}
+  .primary:disabled{background:var(--line); color:#A7B0C6; box-shadow:none; cursor:default;}
+  .ghost{padding:14px 24px; border-radius:14px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink); font-size:15px; font-weight:600; cursor:pointer; font-family:var(--body); transition:border-color .15s;}
+  .ghost:hover{border-color:#C9D3EC;}
+  .tag{display:inline-block; font-family:var(--disp); color:var(--blue); font-size:13px; font-weight:700; letter-spacing:.6px; margin-bottom:14px; text-transform:uppercase;}
+  .q{font-size:22px; line-height:1.4; font-weight:700; margin:0 0 26px; letter-spacing:-.3px;}
+  .opt{width:100%; text-align:left; padding:16px; border-radius:15px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink); font-size:16px; font-weight:500; cursor:pointer; transition:background .25s, border-color .25s, color .25s, box-shadow .2s; display:flex; align-items:center; gap:13px; font-family:var(--body); box-shadow:var(--sh);}
+  .opt:not([disabled]):hover{border-color:#C9D3EC; box-shadow:var(--shH);}
+  .opt[disabled]{cursor:default;}
+  .opt.sel{border-color:var(--blue); background:var(--blueSoft); color:var(--ink);}
+  .opt.sel .badge2{background:var(--blue); color:#fff; border-color:var(--blue);}
+  .opt.pending{background:#0F1730; border-color:#0F1730; color:#fff;}
+  .opt.pending .badge2{background:#fff; color:#0F1730; border-color:#fff;}
+  .opt.dim55{opacity:.5;} .opt.dim{opacity:.4;}
+  .opt.ok{background:var(--okFill); border-color:var(--okBorder); color:var(--okText); animation:pop .42s cubic-bezier(.2,.8,.2,1);}
+  .opt.ok.noanim{animation:none;}
+  .opt.no{background:var(--noFill); border-color:var(--noBorder); color:var(--noText);}
+  .badge2{flex-shrink:0; width:28px; height:28px; border-radius:9px; background:var(--bg2); color:var(--muted); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;}
+  .opt.ok .badge2{background:var(--ok); color:#fff; border-color:var(--ok);}
+  .opt.no .badge2{background:var(--noText); color:#fff; border-color:var(--noText);}
+  .ck{width:15px; height:15px; stroke:#fff; fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round;}
+  .ck path{stroke-dasharray:24; stroke-dashoffset:24; animation:drawck .35s .06s ease forwards;}
+  .feedback{margin-top:24px;}
+  .fb-txt{margin:0 0 6px; font-size:15px; font-weight:700;}
+  .fb-exp{margin:0 0 16px; font-size:14px; color:var(--ink2); line-height:1.55;}
+  .navrow{display:flex; gap:12px; margin-top:26px; align-items:center;}
+
+  /* test layout + question palette */
+  .test-wrap{display:flex; gap:28px; align-items:flex-start; max-width:880px; margin:0 auto; padding:34px 22px 90px;}
+  .test-main{flex:1; min-width:0;}
+  .test-aside{width:156px; flex-shrink:0; position:sticky; top:80px;}
+  .palette-title{font-size:11px; font-weight:700; color:var(--muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:11px;}
+  .palette{display:flex; flex-wrap:wrap; gap:7px;}
+  .pbtn{width:34px; height:34px; border-radius:9px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink2); font-weight:700; font-size:13px; cursor:pointer; font-family:var(--body); transition:transform .1s, border-color .15s, background .15s;}
+  .pbtn:hover{border-color:#C9D3EC;}
+  .pbtn:active{transform:scale(.92);}
+  .pbtn.done{background:var(--blueSoft); border-color:var(--blue); color:var(--blueInk);}
+  .pbtn.cur{background:var(--ink); border-color:var(--ink); color:#fff;}
+  .btn-fin{width:100%; margin-top:16px; padding:15px; border-radius:14px; border:none; background:var(--ink); color:#fff; font-size:15px; font-weight:600; cursor:pointer; font-family:var(--body); transition:background .2s;}
+  .btn-fin:hover{background:#1a2236;}
+  @media (max-width:760px){
+    .test-wrap{flex-direction:column; gap:20px; padding:28px 20px 80px;}
+    .test-aside{width:100%; position:static; order:2; border-top:1px solid var(--line); padding-top:18px;}
+    .test-main{order:1;}
+  }
+
+  /* kaizen meaning */
+  .kz-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+  .kz-card{padding:28px; border:1px solid var(--line); border-radius:18px; background:var(--bg); box-shadow:var(--sh);}
+  .kz-card .kz-n{font-family:var(--disp); font-weight:800; font-size:34px; letter-spacing:-1px; color:var(--blue); margin-bottom:8px;}
+  .kz-card h3{font-family:var(--disp); font-weight:700; font-size:17px; margin:0 0 7px;}
+  .kz-card p{font-size:14.5px; color:var(--ink2); margin:0; line-height:1.55;}
+
+  /* cuentas / auth */
+  .flabel{font-size:13px; font-weight:600; color:var(--ink2); margin-bottom:6px; display:block;}
+  .fld{width:100%; padding:13px 14px; border:1.5px solid var(--line); border-radius:12px; font-size:15px; font-family:var(--body); background:var(--bg); color:var(--ink); margin-bottom:13px;}
+  .fld:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blueSoft);}
+  .authtab{display:flex; gap:8px; margin-bottom:22px;}
+  .authtab button{flex:1; padding:11px; border-radius:11px; border:1.5px solid var(--line); background:var(--bg); font-weight:600; font-family:var(--body); cursor:pointer; color:var(--ink2);}
+  .authtab button.on{background:var(--blue); border-color:var(--blue); color:#fff;}
+  .authmsg{padding:11px 13px; border-radius:11px; font-size:14px; margin-bottom:16px; line-height:1.5;}
+  .authmsg.err{background:var(--noFill); color:var(--noText); border:1px solid var(--noBorder);}
+  .authmsg.info{background:var(--blueSoft); color:var(--blueInk); border:1px solid #cfe0f5;}
+  .statbox{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:10px 0 24px;}
+  .statbox .b{border:1px solid var(--line); border-radius:14px; padding:16px 10px; text-align:center; background:var(--bg);}
+  .statbox .b .n{font-family:var(--disp); font-weight:800; font-size:24px; color:var(--blue);}
+  .statbox .b .l{font-size:12px; color:var(--muted); margin-top:4px;}
+  @media (max-width:760px){ .kz-grid{grid-template-columns:1fr;} }
+  .ring-wrap{display:flex; justify-content:center; margin-bottom:22px;}
+  .meta{display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;}
+  .meta .small{font-size:13px; color:var(--muted);}
+  .meta .big{font-size:18px; font-weight:800; margin-top:2px; font-family:var(--disp);}
+  .center{text-align:center;}
+  .muted{color:var(--muted); font-size:13px;}
+  .empty{padding:40px 18px; text-align:center; color:var(--muted); border:1.5px dashed var(--line); border-radius:16px; background:var(--bg);}
+  .corr-q{border:1px solid var(--line); border-radius:16px; padding:20px; margin-bottom:14px; background:var(--bg); box-shadow:var(--sh);}
+  .corr-n{font-family:var(--disp); font-weight:700; font-size:13px; color:var(--muted); margin-bottom:6px;}
+  .view{animation:qin .32s cubic-bezier(.2,.7,.2,1);}
+
+  @keyframes qin{from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;}}
+  @keyframes pop{0%{transform:scale(1);}45%{transform:scale(1.03);}100%{transform:scale(1);}}
+  @keyframes drawck{to{stroke-dashoffset:0;}}
+
+  @media (max-width:760px){
+    .hero-grid{grid-template-columns:1fr; gap:34px;}
+    .stats{grid-template-columns:repeat(3,1fr); gap:10px;}
+    .modos{grid-template-columns:1fr;}
+    .feat,.pasos{grid-template-columns:1fr; gap:24px;}
+    .temas-grid{grid-template-columns:1fr;}
+  }
+  @media (prefers-reduced-motion: reduce){*{animation:none!important; transition:none!important;} html{scroll-behavior:auto;}}
+</style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-in">
+      <div class="lock" data-top>
+        <svg width="33" height="33" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <defs><linearGradient id="kzn" x1="6" y1="3" x2="42" y2="45" gradientUnits="userSpaceOnUse"><stop stop-color="#3A66A8"/><stop offset="1" stop-color="#213F69"/></linearGradient></defs>
+          <path d="M24 3.2 L41 9 V23 C41 33 33.5 41 24 45 C14.5 41 7 33 7 23 V9 Z" fill="url(#kzn)"/>
+          <path d="M15 26.6 L24 17.9 L33 26.6" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M15 34 L24 25.3 L33 34" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.82"/>
+        </svg>
+        <div><div class="word">KAIZEN</div></div>
+      </div>
+      <div class="navmenu">
+        <button class="navlink" data-nav="inicio">Inicio</button>
+        <button class="navlink" data-nav="ranking">Ranking</button>
+        <button class="navlink" data-nav="info">Información</button>
+        <button class="navcta" data-nav="cuenta">Cuenta</button>
+      </div>
+    </div>
+  </nav>
+  <div id="app"></div>
+
+<script>
+const SUPABASE_URL = "https://bsijdcsruldswsubaieu.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzaWpkY3NydWxkc3dzdWJhaWV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTgzMTQsImV4cCI6MjA5ODAzNDMxNH0.dcEx8m8JHTxhLxqqnBJoIibjPMxchORRkJqc4I5UjOg";
+const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const LETRAS = ["A","B","C"];
+const ESPERA = 400;
+const REDUCE = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const ICONS = {
+  temario:'<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 3v2.5h6V3"/><path d="M9 11h6M9 15h4"/>',
+  estudio:'<path d="M20 8a8 8 0 0 0-14-3.5M20 4v4h-4"/><path d="M4 16a8 8 0 0 0 14 3.5M4 20v-4h4"/>',
+  simulacro:'<circle cx="12" cy="14" r="7"/><path d="M12 14V10M10 2.5h4M18.5 6l-1.3 1.3"/>',
+  pagina:'<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M10 13h5M10 17h5"/>',
+  check:'<path d="M20 6L9 17l-5-5"/>', layers:'<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/>', clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
+};
+const svg = (n,sz=24)=>`<svg width="${sz}" height="${sz}" viewBox="0 0 24 24">${ICONS[n]}</svg>`;
+const CK = `<svg class="ck" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>`;
+const fmt = (s)=>`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+const baraja = (a)=>{const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x;};
+const esc = (t)=>String(t==null?"":t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function ring(size,progress,width,inner,fgId){
+  const r=(size-width*2)/2, c=2*Math.PI*r, off=c-c*Math.max(0.02,progress);
+  const id = fgId?`id="${fgId}"`:"";
+  return `<div style="position:relative;width:${size}px;height:${size}px">
+    <svg width="${size}" height="${size}" style="transform:rotate(-90deg)">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="${width}"/>
+      <circle ${id} cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--blue)" stroke-width="${width}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" style="transition:stroke-dashoffset .7s cubic-bezier(.3,.8,.2,1)"/>
+    </svg>
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">${inner}</div>
+  </div>`;
+}
+
+// ====== ESTADO ======
+let TEMAS=[], PREGUNTAS=[];
+let vista="inicio", modoConfig="temario", selTemas=new Set(), numPreg=10;
+let preguntas=[], titulo="", esSimulacro=false, indice=0, respuestas=[], aciertos=0, segundos=0, timer=null;
+let estActual=null, estPool=[], estElegida=null, estPendiente=null, estCount=0;
+let anim=true; // controla la animación de entrada (evita el "tirón" al responder)
+let usuario=null, perfil=null, authVista="login", authMsg=null;
+let authForm={"lg-email":"","lg-pass":"","rg-nombre":"","rg-alias":"","rg-email":"","rg-pass":""};
+
+const app = ()=>document.getElementById("app");
+function go(v){ stopTimer(); anim=true; vista=v; render(); window.scrollTo(0,0); }
+
+function poolDe(set){ const m=Object.fromEntries(TEMAS.map(t=>[t.id,t.nombre])); return PREGUNTAS.filter(p=>set.has(p.tema_id)).map(p=>({...p, tema:m[p.tema_id]})); }
+function todas(){ const m=Object.fromEntries(TEMAS.map(t=>[t.id,t.nombre])); return PREGUNTAS.map(p=>({...p, tema:m[p.tema_id]})); }
+
+function startTimer(){ stopTimer(); timer=setInterval(()=>{ segundos++; const e=document.getElementById("cron"); if(e) e.textContent="⏱ "+fmt(segundos); else stopTimer(); },1000); }
+function stopTimer(){ if(timer){clearInterval(timer); timer=null;} }
+
+// ====== ACCIONES ======
+function abrirConfig(m){ modoConfig=m; selTemas=new Set(); numPreg=10; go("config"); }
+function comenzarTemario(){
+  const pool=baraja(poolDe(selTemas));
+  const n = numPreg==="todas" ? pool.length : Math.min(numPreg,pool.length);
+  preguntas=pool.slice(0,n); titulo="Test de temario"; esSimulacro=false;
+  indice=0; respuestas=new Array(preguntas.length).fill(null); aciertos=0; segundos=0; go("test");
+}
+function comenzarSimulacro(){
+  preguntas=baraja(todas()); titulo="Simulacro"; esSimulacro=true;
+  indice=0; respuestas=new Array(preguntas.length).fill(null); aciertos=0; segundos=0; go("test"); startTimer();
+}
+function comenzarEstudio(){
+  estPool=poolDe(selTemas); estCount=0; estElegida=null; estPendiente=null;
+  estActual=estPool[Math.floor(Math.random()*estPool.length)]; go("estudio");
+}
+function siguienteEstudio(){
+  let n=estPool[Math.floor(Math.random()*estPool.length)];
+  if(estPool.length>1){ while(n===estActual) n=estPool[Math.floor(Math.random()*estPool.length)]; }
+  estActual=n; estElegida=null; estPendiente=null; estCount++; anim=true; render();
+}
+// TEST: solo selecciona, sin corregir (la corrección es al final)
+function seleccionarTest(i){ respuestas[indice]=(respuestas[indice]===i?null:i); anim=false; render(); }
+function anterior(){ if(indice>0){ indice--; anim=true; render(); } }
+function siguiente(){
+  if(indice+1<preguntas.length){ indice++; anim=true; render(); }
+  else { go("resultados"); }
+}
+function dejarBlanco(){ respuestas[indice]=null; siguiente(); }
+// ESTUDIO: corrige al momento
+function elegirEstudio(i){
+  if(estElegida!==null||estPendiente!==null) return;
+  estPendiente=i; anim=false; render();
+  setTimeout(()=>{ estElegida=i; estPendiente=null; anim=false; render(); }, ESPERA);
+}
+
+// ====== SCROLL REVEAL + CONTADORES ======
+function observar(){
+  if(REDUCE){ document.querySelectorAll('.reveal').forEach(e=>e.classList.add('in')); document.querySelectorAll('.count').forEach(e=>e.textContent=e.dataset.target); return; }
+  const io=new IntersectionObserver((ents)=>{ ents.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); if(en.target.classList.contains('count')) contar(en.target); io.unobserve(en.target); } }); },{threshold:.16});
+  document.querySelectorAll('.reveal,.count').forEach(e=>io.observe(e));
+}
+function contar(el){ const tgt=+el.dataset.target; const t0=performance.now(); const step=(n)=>{ const k=Math.min(1,(n-t0)/900); el.textContent=Math.round(k*tgt); if(k<1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+
+// ====== CUENTAS / AUTENTICACIÓN ======
+function val(id){ return authForm[id] ? authForm[id].trim() : ""; }
+function actualizarNavCuenta(){ const b=document.querySelector('[data-nav="cuenta"]'); if(b) b.textContent = (perfil&&perfil.alias) ? perfil.alias : "Cuenta"; }
+async function refrescarSesion(){
+  try{
+    const { data } = await supa.auth.getSession();
+    usuario = data && data.session ? data.session.user : null;
+    perfil = null;
+    if(usuario){
+      const { data:perf } = await supa.from("perfiles").select("*").eq("id", usuario.id).maybeSingle();
+      perfil = perf || null;
+    }
+  }catch(e){ console.error(e); }
+  actualizarNavCuenta();
+}
+function traducirError(msg){
+  msg = (msg||"").toLowerCase();
+  if(msg.includes("already registered")||msg.includes("already been registered")) return "Ese email ya tiene una cuenta. Prueba a iniciar sesión.";
+  if(msg.includes("database error")) return "Ese alias ya está en uso. Elige otro distinto.";
+  if(msg.includes("password")) return "La contraseña no cumple los requisitos (mínimo 6 caracteres).";
+  if(msg.includes("invalid")) return "Email o contraseña incorrectos.";
+  return "No se ha podido completar. Inténtalo de nuevo.";
+}
+async function registrarse(){
+  const nombre=val("rg-nombre"), alias=val("rg-alias"), email=val("rg-email"), pass=val("rg-pass");
+  if(!nombre||!alias||!email||!pass){ authMsg={t:"err",x:"Completa todos los campos."}; return render(); }
+  if(pass.length<6){ authMsg={t:"err",x:"La contraseña debe tener al menos 6 caracteres."}; return render(); }
+  authMsg={t:"info",x:"Creando tu cuenta…"}; render();
+  const { data, error } = await supa.auth.signUp({ email, password:pass, options:{ data:{ alias, nombre } } });
+  if(error){ authMsg={t:"err",x:traducirError(error.message)}; return render(); }
+  if(data.session){ authForm["rg-pass"]=""; authForm["lg-pass"]=""; await refrescarSesion(); authMsg=null; go("cuenta"); }
+  else { authMsg={t:"info",x:"Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión."}; authVista="login"; render(); }
+}
+async function iniciarSesion(){
+  const email=val("lg-email"), pass=val("lg-pass");
+  if(!email||!pass){ authMsg={t:"err",x:"Introduce tu email y contraseña."}; return render(); }
+  authMsg={t:"info",x:"Entrando…"}; render();
+  const { error } = await supa.auth.signInWithPassword({ email, password:pass });
+  if(error){ authMsg={t:"err",x:"Email o contraseña incorrectos (o aún no has confirmado el correo)."}; return render(); }
+  authForm["lg-pass"]=""; await refrescarSesion(); authMsg=null; go("cuenta");
+}
+async function cerrarSesion(){ await supa.auth.signOut(); usuario=null; perfil=null; actualizarNavCuenta(); go("inicio"); }
+
+// ====== RENDER ======
+function optionHTML(texto,i,correcta,elegidaI,fase,noanim){
+  let cls="opt", inner=LETRAS[i];
+  if(fase==="select"){ if(i===elegidaI) cls+=" sel"; }
+  else if(fase==="pending"){ if(i===elegidaI) cls+=" pending"; else cls+=" dim55"; }
+  else if(fase==="reveal"){ if(i===correcta){ cls+=" ok"+(noanim?" noanim":""); inner=CK; } else if(i===elegidaI){ cls+=" no"; inner="✕"; } else cls+=" dim"; }
+  const dis = (fase==="pending"||fase==="reveal") ? "disabled" : "";
+  return `<button class="${cls}" ${dis} data-opt="${i}"><span class="badge2">${inner}</span><span style="flex:1">${esc(texto)}</span></button>`;
+}
+
+function render(){
+  const A=app(); const W = anim ? "view" : "";
+
+  if(vista==="cargando"){ A.innerHTML=`<div class="narrow"><div class="empty">Cargando KAIZEN…</div></div>`; anim=true; return; }
+  if(vista==="error"){ A.innerHTML=`<div class="narrow"><div class="empty">No se pudo conectar con la base de datos.<br>Recarga la página e inténtalo de nuevo.</div></div>`; anim=true; return; }
+
+  if(vista==="inicio"){
+    const nPreg=PREGUNTAS.length, nTemas=TEMAS.length;
+    A.innerHTML=`
+    <section class="hero"><div class="container">
+      <div class="reveal in" style="max-width:780px; margin:0 auto; text-align:center">
+        <p class="eyebrow">Preparación · Policía Municipal de Madrid</p>
+        <h1 class="hero-h">Mejora cada día.<br>Conquista tu plaza.</h1>
+        <p class="hero-sub" style="margin-left:auto; margin-right:auto">Practica el temario por bloques, repasa pregunta a pregunta y haz simulacros cronometrados. Cada pregunta incluye la respuesta correcta y una breve explicación.</p>
+        <div class="cta-row" style="justify-content:center">
+          <button class="btn-p" data-scroll="modos">Empezar ahora</button>
+        </div>
+      </div>
+    </div></section>
+
+    <section class="sec alt"><div class="container"><div class="stats">
+      <div class="stat reveal"><div class="num count" data-target="${nPreg}">0</div><div class="lab">Preguntas</div></div>
+      <div class="stat reveal"><div class="num count" data-target="${nTemas}">0</div><div class="lab">Temas</div></div>
+      <div class="stat reveal"><div class="num count" data-target="3">0</div><div class="lab">Modos de estudio</div></div>
+    </div></div></section>
+
+    <section class="sec" id="modos"><div class="container">
+      <div class="sec-head reveal"><h2 class="sec-h">Modos de estudio</h2><p class="sec-p">Tres formas de practicar. Empieza por la que prefieras.</p></div>
+      <div class="modos">
+        <button class="modo reveal" data-go="cfg-temario"><span class="mi">${svg('temario')}</span><span class="mtxt"><span class="mt">Test de temario</span><span class="md">Eliges los temas y el número de preguntas. La corrección aparece al terminar.</span></span><span class="marrow">→</span></button>
+        <button class="modo reveal" data-go="cfg-estudio"><span class="mi">${svg('estudio')}</span><span class="mtxt"><span class="mt">Estudio</span><span class="md">Respondes y ves la solución al instante, con su explicación. Sin límite de preguntas.</span></span><span class="marrow">→</span></button>
+        <button class="modo reveal" data-go="simulacro"><span class="mi">${svg('simulacro')}</span><span class="mtxt"><span class="mt">Simulacro</span><span class="md">Examen completo y cronometrado. Corrección al final.</span></span><span class="marrow">→</span></button>
+      </div>
+    </div></section>
+
+    <section class="sec alt"><div class="container">
+      <div class="sec-head reveal"><h2 class="sec-h">Qué incluye</h2></div>
+      <div class="feat">
+        <div class="ft reveal"><div class="fi">${svg('check',22)}</div><h3>Explicación en cada pregunta</h3><p>Cada pregunta indica cuál es la respuesta correcta y por qué.</p></div>
+        <div class="ft reveal"><div class="fi">${svg('layers',22)}</div><h3>Organizado por temas</h3><p>Eliges los bloques que quieres practicar en cada test o repaso.</p></div>
+        <div class="ft reveal"><div class="fi">${svg('clock',22)}</div><h3>Simulacros con tiempo</h3><p>Un examen completo y cronometrado para practicar en condiciones reales.</p></div>
+      </div>
+    </div></section>
+
+    <section class="sec" id="como" style="display:none"></section>
+
+    ${nTemas?`<section class="sec"><div class="container">
+      <div class="sec-head reveal"><h2 class="sec-h">Temario disponible</h2><p class="sec-p">Bloques que puedes practicar ahora mismo.</p></div>
+      <div class="temas-grid">
+        ${TEMAS.map(t=>`<div class="tema-row reveal"><span class="tn">${esc(t.nombre)}</span><span class="tc">${PREGUNTAS.filter(p=>p.tema_id===t.id).length} preguntas</span></div>`).join("")}
+      </div>
+    </div></section>`:""}
+
+    <section class="sec alt"><div class="container">
+      <div class="sec-head reveal" style="margin-bottom:0;max-width:720px">
+        <h2 class="sec-h">A quién va dirigida</h2>
+        <p class="sec-p">KAIZEN está orientada a preparar la parte teórica de la oposición a Policía Municipal de Madrid. Reúne preguntas tipo test sobre el temario para que puedas practicar, repasar y autoevaluarte a tu ritmo, desde el móvil o el ordenador.</p>
+      </div>
+    </div></section>
+
+    <section class="sec"><div class="container">
+      <div class="sec-head reveal" style="max-width:720px"><h2 class="sec-h">Qué significa KAIZEN</h2>
+        <p class="sec-p">KAIZEN es un término japonés que significa <strong>mejora continua</strong>: avanzar un poco cada día en lugar de jugártelo todo en un atracón final. En una oposición, esa es justo la estrategia que gana — y estas cuentas lo explican mejor que cualquier discurso.</p>
+      </div>
+      <div class="kz-grid">
+        <div class="kz-card reveal"><div class="kz-n">×38</div><h3>Un 1% mejor cada día</h3><p>Si mejoras solo un 1% al día, al cabo de un año rindes casi 38 veces más. La constancia compuesta supera siempre al esfuerzo de última hora.</p></div>
+        <div class="kz-card reveal"><div class="kz-n">7.300</div><h3>20 preguntas al día</h3><p>Parecen pocas, pero son más de 7.000 preguntas al año: el temario entero repasado varias veces sin darte cuenta.</p></div>
+        <div class="kz-card reveal"><div class="kz-n">90 h</div><h3>15 minutos al día</h3><p>Quince minutos diarios suman más de 90 horas de estudio al año, y ni un solo día se te hace cuesta arriba.</p></div>
+      </div>
+    </div></section>
+
+    <footer>
+      <div class="fchecker"></div>
+      <div class="fin">
+        <div class="fbrand" style="display:flex;align-items:center;gap:11px">
+          <svg width="30" height="30" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+            <defs><linearGradient id="kzf" x1="6" y1="3" x2="42" y2="45" gradientUnits="userSpaceOnUse"><stop stop-color="#4A78BE"/><stop offset="1" stop-color="#2B5797"/></linearGradient></defs>
+            <path d="M24 3.2 L41 9 V23 C41 33 33.5 41 24 45 C14.5 41 7 33 7 23 V9 Z" fill="url(#kzf)"/>
+            <path d="M15 26.6 L24 17.9 L33 26.6" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 34 L24 25.3 L33 34" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.82"/>
+          </svg>
+          KAIZEN
+        </div>
+        <p class="fdisc">KAIZEN es una plataforma de preparación independiente para opositores. No está vinculada, patrocinada ni avalada por el Ayuntamiento de Madrid, la Policía Municipal de Madrid ni ningún organismo oficial. El contenido es material de estudio y no sustituye a las fuentes y convocatorias oficiales.</p>
+        <div class="fcopy">© ${new Date().getFullYear()} KAIZEN</div>
+      </div>
+    </footer>`;
+
+    A.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{ const a=b.dataset.go;
+      if(a==="cfg-temario") abrirConfig("temario");
+      else if(a==="cfg-estudio") abrirConfig("estudio");
+      else if(a==="simulacro") comenzarSimulacro(); });
+    A.querySelectorAll("[data-scroll]").forEach(b=>b.onclick=()=>{ const el=document.getElementById(b.dataset.scroll); if(el) el.scrollIntoView({behavior:REDUCE?"auto":"smooth"}); });
+    observar(); anim=true; return;
+  }
+
+  if(vista==="info"){
+    A.innerHTML=`<div class="narrow ${W}">
+      <button class="back" data-back>← Volver</button>
+      <h2 class="h2a">Información</h2>
+      <p class="sub">Qué es KAIZEN y cómo te ayuda a preparar la oposición.</p>
+      <div style="display:flex;flex-direction:column;gap:22px">
+        <div><h3 style="font-family:var(--disp);font-size:18px;margin:0 0 6px">A quién va dirigida</h3>
+          <p style="color:var(--ink2);font-size:15px;line-height:1.6;margin:0">KAIZEN está orientada a preparar la parte teórica de la oposición a Policía Municipal de Madrid. Reúne preguntas tipo test sobre el temario oficial para practicar, repasar y autoevaluarte a tu ritmo.</p></div>
+        <div><h3 style="font-family:var(--disp);font-size:18px;margin:0 0 6px">Cómo funciona</h3>
+          <p style="color:var(--ink2);font-size:15px;line-height:1.6;margin:0">Elige un modo: <strong>Test de temario</strong> (eliges temas y número de preguntas, con corrección y nota al final), <strong>Estudio</strong> (solución inmediata pregunta a pregunta) o <strong>Simulacro</strong> (examen completo cronometrado). En los tests la nota es sobre 10: acierto +1, fallo −0,33, en blanco 0.</p></div>
+        <div><h3 style="font-family:var(--disp);font-size:18px;margin:0 0 6px">Qué significa KAIZEN</h3>
+          <p style="color:var(--ink2);font-size:15px;line-height:1.6;margin:0">Es un término japonés que significa <strong>mejora continua</strong>: avanzar un poco cada día. Estudiando con constancia, esa pequeña rutina diaria se convierte en miles de preguntas repasadas a lo largo del año.</p></div>
+        <div style="border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--bg2)">
+          <p style="color:var(--muted);font-size:13px;line-height:1.6;margin:0">KAIZEN es una plataforma de preparación independiente. No está vinculada ni avalada por el Ayuntamiento de Madrid, la Policía Municipal de Madrid ni ningún organismo oficial. El contenido es material de estudio y no sustituye a las fuentes y convocatorias oficiales.</p>
+        </div>
+      </div>
+    </div>`;
+    A.querySelector("[data-back]").onclick=()=>go("inicio");
+    anim=true; return;
+  }
+
+  if(vista==="ranking"){
+    A.innerHTML=`<div class="narrow ${W}">
+      <button class="back" data-back>← Volver</button>
+      <h2 class="h2a">Ranking</h2>
+      <p class="sub">Compara tu progreso con el de otros opositores.</p>
+      <div class="empty">
+        El ranking estará disponible cuando habilitemos las <strong>cuentas de usuario</strong>.<br><br>
+        Entonces podrás ver tu nota media, los tests que llevas hechos y tu posición frente a otros usuarios. Estamos trabajando en ello.
+      </div>
+    </div>`;
+    A.querySelector("[data-back]").onclick=()=>go("inicio");
+    anim=true; return;
+  }
+
+  if(vista==="cuenta"){
+    const msg = authMsg ? `<div class="authmsg ${authMsg.t}">${esc(authMsg.x)}</div>` : "";
+    let cuerpo;
+    if(usuario && perfil){
+      cuerpo = `
+        <h2 class="h2a">Hola, ${esc(perfil.alias)}</h2>
+        <p class="sub">${esc(perfil.nombre||"")}</p>
+        <div class="statbox">
+          <div class="b"><div class="n">${perfil.tests_hechos}</div><div class="l">Tests hechos</div></div>
+          <div class="b"><div class="n">${Number(perfil.nota_media).toFixed(2).replace('.',',')}</div><div class="l">Nota media</div></div>
+          <div class="b"><div class="n">${Number(perfil.mejor_nota).toFixed(2).replace('.',',')}</div><div class="l">Mejor nota</div></div>
+        </div>
+        <p class="muted" style="margin-bottom:22px">A partir de ahora, los tests y simulacros que termines se guardarán en tu cuenta.</p>
+        <button class="ghost" data-logout>Cerrar sesión</button>`;
+    } else if(usuario && !perfil){
+      cuerpo = `<h2 class="h2a">Cuenta</h2><div class="empty">Tu sesión está activa pero no encontramos tu perfil. Prueba a cerrar sesión y volver a entrar.</div>
+        <button class="ghost" data-logout style="margin-top:16px">Cerrar sesión</button>`;
+    } else {
+      const tabs = `<div class="authtab">
+        <button class="${authVista==='login'?'on':''}" data-tab="login">Iniciar sesión</button>
+        <button class="${authVista==='registro'?'on':''}" data-tab="registro">Crear cuenta</button>
+      </div>`;
+      const form = authVista==="registro" ? `
+        <label class="flabel">Nombre</label><input class="fld" id="rg-nombre" value="${esc(authForm['rg-nombre'])}">
+        <label class="flabel">Alias (lo que verán los demás en el ranking)</label><input class="fld" id="rg-alias" value="${esc(authForm['rg-alias'])}">
+        <label class="flabel">Email</label><input class="fld" id="rg-email" type="email" value="${esc(authForm['rg-email'])}">
+        <label class="flabel">Contraseña (mínimo 6 caracteres)</label><input class="fld" id="rg-pass" type="password" value="${esc(authForm['rg-pass'])}">
+        <button class="primary" data-registro>Crear cuenta</button>` : `
+        <label class="flabel">Email</label><input class="fld" id="lg-email" type="email" value="${esc(authForm['lg-email'])}">
+        <label class="flabel">Contraseña</label><input class="fld" id="lg-pass" type="password" value="${esc(authForm['lg-pass'])}">
+        <button class="primary" data-login>Iniciar sesión</button>`;
+      cuerpo = `<h2 class="h2a">Cuenta</h2><p class="sub">Crea tu cuenta o inicia sesión para guardar tu progreso y ver el ranking.</p>${tabs}${msg}${form}`;
+    }
+    A.innerHTML=`<div class="narrow ${W}"><button class="back" data-back>← Volver</button>${(usuario?msg:"")}${cuerpo}</div>`;
+    A.querySelector("[data-back]").onclick=()=>{ authMsg=null; go("inicio"); };
+    A.querySelectorAll(".fld").forEach(i=>i.oninput=()=>{ authForm[i.id]=i.value; });
+    A.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ authVista=b.dataset.tab; authMsg=null; render(); });
+    const lg=A.querySelector("[data-login]"); if(lg) lg.onclick=iniciarSesion;
+    const rg=A.querySelector("[data-registro]"); if(rg) rg.onclick=registrarse;
+    const lo=A.querySelector("[data-logout]"); if(lo) lo.onclick=cerrarSesion;
+    anim=true; return;
+  }
+
+  if(vista==="config"){
+    A.innerHTML=`<div class="narrow ${W}">
+      <button class="back" data-back>← Volver</button>
+      <h2 class="h2a">${modoConfig==="temario"?"Test de temario":"Estudio"}</h2>
+      <p class="sub">Selecciona los temas que quieres incluir.</p>
+      <div class="stack" style="margin-bottom:28px">
+        ${TEMAS.map(t=>`<button class="temaBtn ${selTemas.has(t.id)?'on':''}" data-tema="${t.id}"><span class="chk">${selTemas.has(t.id)?'✓':''}</span><span class="name">${esc(t.nombre)}</span></button>`).join("")}
+      </div>
+      ${modoConfig==="temario"?`<div style="margin-bottom:28px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:11px;letter-spacing:.3px">NÚMERO DE PREGUNTAS</div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap">${[10,20,30,40,50,80,100].map(n=>`<button class="pill ${numPreg===n?'on':''}" data-num="${n}">${n}</button>`).join("")}</div>
+      </div>`:""}
+      <button class="primary" data-start ${selTemas.size===0?"disabled":""}>${selTemas.size===0?"Elige al menos un tema":(modoConfig==="temario"?"Comenzar test":"Empezar a estudiar")}</button>
+    </div>`;
+    A.querySelector("[data-back]").onclick=()=>go("inicio");
+    A.querySelectorAll("[data-tema]").forEach(b=>b.onclick=()=>{ const id=Number(b.dataset.tema); selTemas.has(id)?selTemas.delete(id):selTemas.add(id); anim=false; render(); });
+    A.querySelectorAll("[data-num]").forEach(b=>b.onclick=()=>{ numPreg=Number(b.dataset.num); anim=false; render(); });
+    const start=A.querySelector("[data-start]"); if(start) start.onclick=()=> modoConfig==="temario"?comenzarTemario():comenzarEstudio();
+    anim=true; return;
+  }
+
+  if(vista==="test"){
+    const actual=preguntas[indice]; const sel=respuestas[indice];
+    const prog=indice/preguntas.length; const respondidas=respuestas.filter(r=>r!==null).length;
+    const palette=preguntas.map((_,i)=>`<button class="pbtn ${i===indice?'cur':(respuestas[i]!==null?'done':'')}" data-jump="${i}">${i+1}</button>`).join("");
+    A.innerHTML=`<div class="test-wrap ${W}">
+      <div class="test-main">
+        <button class="back" data-salir>← Salir del test</button>
+        <div class="meta">
+          <div><div class="small">Pregunta ${indice+1} de ${preguntas.length}</div>
+            <div class="big" id="cron">${esSimulacro?("⏱ "+fmt(segundos)):(respondidas+" de "+preguntas.length+" respondidas")}</div></div>
+          ${ring(58,prog,5,`<span style="font-size:13px;font-weight:800;color:var(--blue)">${Math.round(prog*100)}%</span>`)}
+        </div>
+        <span class="tag">${esc(actual.tema||titulo)}</span>
+        <h1 class="q">${esc(actual.enunciado)}</h1>
+        <div class="stack">${[actual.opcion_a,actual.opcion_b,actual.opcion_c].map((op,i)=>optionHTML(op,i,actual.correcta,sel,"select")).join("")}</div>
+        <div class="navrow">
+          ${indice>0?`<button class="ghost" data-prev>Anterior</button>`:""}
+          <button class="primary" style="flex:1" data-next ${indice+1>=preguntas.length?"disabled":""}>Siguiente</button>
+        </div>
+        <div style="text-align:center;margin-top:14px"><button class="back" style="margin:0" data-blank>Dejar en blanco y continuar</button></div>
+        <button class="btn-fin" data-fin>Terminar y ver mi nota</button>
+      </div>
+      <aside class="test-aside">
+        <div class="palette-title">Índice · ${respondidas}/${preguntas.length}</div>
+        <div class="palette">${palette}</div>
+      </aside>
+    </div>`;
+    A.querySelector("[data-salir]").onclick=()=>{ if(confirm("¿Salir del test? Se perderán tus respuestas y no se guardará la nota.")) go("inicio"); };
+    A.querySelectorAll("[data-opt]").forEach(b=>b.onclick=()=>seleccionarTest(Number(b.dataset.opt)));
+    A.querySelectorAll("[data-jump]").forEach(b=>b.onclick=()=>{ indice=Number(b.dataset.jump); anim=true; render(); window.scrollTo(0,0); });
+    const pv=A.querySelector("[data-prev]"); if(pv) pv.onclick=anterior;
+    const nx=A.querySelector("[data-next]"); if(nx&&!nx.disabled) nx.onclick=siguiente;
+    A.querySelector("[data-blank]").onclick=dejarBlanco;
+    A.querySelector("[data-fin]").onclick=()=>{ if(respondidas<preguntas.length){ if(!confirm("Aún tienes preguntas sin responder (contarán como en blanco). ¿Terminar y ver la nota?")) return; } go("resultados"); };
+    anim=true; return;
+  }
+
+  if(vista==="estudio"){
+    const a=estActual; const revelado=estElegida!==null;
+    const fase = estElegida!==null?"reveal":(estPendiente!==null?"pending":"idle");
+    const elegidaI = estPendiente!==null?estPendiente:estElegida;
+    A.innerHTML=`<div class="narrow ${W}">
+      <button class="back" data-back>← Volver</button>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:18px"><span>Modo estudio · repaso</span><span>${estCount} repasadas</span></div>
+      <span class="tag">${esc(a.tema)}</span>
+      <h1 class="q">${esc(a.enunciado)}</h1>
+      <div class="stack">${[a.opcion_a,a.opcion_b,a.opcion_c].map((op,i)=>optionHTML(op,i,a.correcta,elegidaI,fase)).join("")}</div>
+      ${revelado?`<div class="feedback">
+        <p class="fb-txt" style="color:${estElegida===a.correcta?'var(--okText)':'var(--noText)'}">${estElegida===a.correcta?"Correcto.":"Incorrecto."}</p>
+        ${a.explicacion?`<p class="fb-exp">${esc(a.explicacion)}</p>`:""}
+        <button class="primary" data-nextest>Siguiente pregunta</button>
+      </div>`:""}
+    </div>`;
+    A.querySelector("[data-back]").onclick=()=>go("inicio");
+    A.querySelectorAll("[data-opt]").forEach(b=>b.onclick=()=>elegirEstudio(Number(b.dataset.opt)));
+    const ne=A.querySelector("[data-nextest]"); if(ne) ne.onclick=siguienteEstudio;
+    anim=true; return;
+  }
+
+  if(vista==="resultados"){
+    const total=preguntas.length;
+    let c=0,w=0,b=0;
+    respuestas.forEach((rr,idx)=>{ if(rr===null) b++; else if(rr===preguntas[idx].correcta) c++; else w++; });
+    const nota = Math.max(0, ((c - 0.33*w)/total)*10);
+    const notaTxt = nota.toFixed(2).replace('.',',');
+    const r=(150-14)/2, cc=2*Math.PI*r, off=cc-cc*Math.max(0.02, nota/10);
+    A.innerHTML=`<div class="narrow ${W} center" style="padding-top:30px">
+      <div class="muted" style="margin-bottom:24px">${esc(titulo)} · completado</div>
+      <div class="ring-wrap">${ring(150,0,7,`<div style="font-size:40px;font-weight:800;line-height:1;font-family:var(--disp)"><span id="scoreNum">0,00</span><span style="color:var(--muted);font-size:20px">/10</span></div>`,"ringfg")}</div>
+      ${esSimulacro?`<div class="muted" style="font-size:15px;margin-bottom:6px">Tiempo: ${fmt(segundos)}</div>`:""}
+      <p style="font-size:15px;color:var(--ink2);margin:10px 0 6px">${c} aciertos · ${w} fallos · ${b} en blanco</p>
+      <p class="muted" style="margin:0 0 28px">Acierto +1 · Fallo −0,33 · En blanco 0</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="primary" style="width:auto" data-corr>Ver corrección</button>
+        <button class="ghost" data-home>Volver al inicio</button>
+      </div>
+    </div>`;
+    A.querySelector("[data-home]").onclick=()=>go("inicio");
+    A.querySelector("[data-corr]").onclick=()=>go("correccion");
+    const fg=document.getElementById("ringfg"); if(fg) requestAnimationFrame(()=>{ fg.style.strokeDashoffset = off; });
+    const span=document.getElementById("scoreNum");
+    if(span && !REDUCE){ const t0=performance.now(); const step=(now)=>{ const k=Math.min(1,(now-t0)/700); span.textContent=(k*nota).toFixed(2).replace('.',','); if(k<1) requestAnimationFrame(step); else span.textContent=notaTxt; }; requestAnimationFrame(step); }
+    else if(span){ span.textContent=notaTxt; }
+    anim=true; return;
+  }
+
+  if(vista==="correccion"){
+    const total=preguntas.length;
+    let c=0,w=0,b=0;
+    respuestas.forEach((rr,idx)=>{ if(rr===null) b++; else if(rr===preguntas[idx].correcta) c++; else w++; });
+    A.innerHTML=`<div class="narrow ${W}">
+      <button class="back" data-back>← Volver a resultados</button>
+      <h2 class="h2a">Corrección</h2>
+      <p class="sub">${c} aciertos · ${w} fallos · ${b} en blanco. Repasa cada pregunta:</p>
+      ${preguntas.map((p,qi)=>{
+        const rr=respuestas[qi];
+        const ops=[p.opcion_a,p.opcion_b,p.opcion_c].map((op,i)=>optionHTML(op,i,p.correcta,rr,"reveal",true)).join("");
+        const estado = rr===null ? "Sin responder" : (rr===p.correcta ? "Correcta" : "Incorrecta");
+        return `<div class="corr-q">
+          <div class="corr-n">Pregunta ${qi+1} · ${esc(p.tema||"")} · ${estado}</div>
+          <h1 class="q" style="font-size:18px;margin-bottom:16px">${esc(p.enunciado)}</h1>
+          <div class="stack">${ops}</div>
+          ${p.explicacion?`<p class="fb-exp" style="margin-top:14px;margin-bottom:0">${esc(p.explicacion)}</p>`:""}
+        </div>`;
+      }).join("")}
+      <button class="ghost" data-home style="margin-top:10px">Volver al inicio</button>
+    </div>`;
+    A.querySelector("[data-back]").onclick=()=>go("resultados");
+    A.querySelector("[data-home]").onclick=()=>go("inicio");
+    anim=true; return;
+  }
+}
+
+document.querySelector("[data-top]").onclick=()=>{ if(vista==="inicio") window.scrollTo({top:0,behavior:REDUCE?"auto":"smooth"}); else go("inicio"); };
+document.querySelectorAll("[data-nav]").forEach(b=>b.onclick=()=>{ go(b.dataset.nav); });
+
+async function init(){
+  vista="cargando"; render();
+  try{
+    const [t,p] = await Promise.all([ supa.from("temas").select("*").order("id"), supa.from("preguntas").select("*") ]);
+    if(t.error||p.error) throw (t.error||p.error);
+    TEMAS = t.data||[]; PREGUNTAS = p.data||[];
+    await refrescarSesion();
+    go("inicio");
+  }catch(e){ console.error(e); vista="error"; render(); }
+}
+init();
+</script>
+</body>
+</html>
